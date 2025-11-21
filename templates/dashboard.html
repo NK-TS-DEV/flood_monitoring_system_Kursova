@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar p-3">
+            <h4 class="mb-4 text-center">🌊 FloodMonitor</h4>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2"><a href="#" class="nav-link active">📊 Дашборд</a></li>
+                <li class="nav-item mb-2"><a href="#" class="nav-link">📡 Сенсори</a></li>
+                <li class="nav-item mb-2"><a href="#" class="nav-link">⚠️ Тривоги</a></li>
+                <li class="nav-item mb-2"><a href="#" class="nav-link">⚙️ Налаштування</a></li>
+            </ul>
+        </div>
+
+        <div class="col-md-10 p-4">
+            <h2 class="mb-4">Оперативна ситуація</h2>
+            
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white p-3">
+                        <h5>Всього сенсорів</h5>
+                        <h2>{{ sensors_count }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white p-3">
+                        <h5>Активні тривоги</h5>
+                        <h2>{{ alerts_count }}</h2>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white p-3">
+                        <h5>Система</h5>
+                        <h2>Online</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8 mb-4">
+                    <div class="card p-3">
+                        <h5 class="card-title">Карта моніторингу</h5>
+                        <div id="map"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card p-3 h-100">
+                        <h5 class="card-title text-danger">Останні сповіщення</h5>
+                        <div class="list-group list-group-flush overflow-auto" style="max-height: 450px;">
+                            {% for alert in alerts %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <strong class="mb-1 text-danger">⚠️ {{ alert.get_level_display }}</strong>
+                                    <small>{{ alert.created_at|date:"H:i" }}</small>
+                                </div>
+                                <p class="mb-1 small">{{ alert.sensor.name }} ({{ alert.sensor.get_region_display }})</p>
+                                <small class="text-muted">{{ alert.message }}</small>
+                            </div>
+                            {% empty %}
+                            <p class="text-center text-muted mt-5">Немає активних тривог ✅</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Ініціалізація карти (центр на Карпатах)
+    var map = L.map('map').setView([48.45, 24.55], 9);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Дані з Django (JSON)
+    var sensorsData = JSON.parse('{{ map_data_json|escapejs }}');
+
+    sensorsData.forEach(function(sensor) {
+        var markerColor = sensor.status === 'online' ? 'green' : 'red';
+        
+        // Простий маркер (можна замінити на кольорові іконки)
+        var marker = L.marker([sensor.lat, sensor.lng]).addTo(map);
+        
+        marker.bindPopup(`
+            <b>${sensor.name}</b><br>
+            Регіон: ${sensor.region}<br>
+            Значення: ${sensor.val}<br>
+            Статус: ${sensor.status}
+        `);
+    });
+</script>
+{% endblock %}
