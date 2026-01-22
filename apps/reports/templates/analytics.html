@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+        <h2>📈 Аналітика системи</h2>
+        <span class="text-muted">Період: {{ start_date|date:"d.m" }} — {{ end_date|date:"d.m.Y" }}</span>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-uppercase opacity-75">Всього інцидентів</h6>
+                    <h1 class="display-4 fw-bold">{{ summary.total_alerts }}</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-uppercase opacity-75">Критичні (Critical)</h6>
+                    <h1 class="display-4 fw-bold">{{ summary.critical_count }}</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-uppercase opacity-75">Попередження (Warning)</h6>
+                    <h1 class="display-4 fw-bold">{{ summary.warning_count }}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 text-secondary"><i class="fas fa-chart-area me-2"></i>Динаміка тривог за 30 днів</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="alertsChart" style="max-height: 400px;"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+   
+    const labels = JSON.parse('{{ chart_labels_json|escapejs }}');
+    const dataValues = JSON.parse('{{ chart_data_json|escapejs }}');
+
+    const ctx = document.getElementById('alertsChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Кількість тривог',
+                data: dataValues,
+                borderColor: '#3498db',    
+                backgroundColor: 'rgba(52, 152, 219, 0.1)', 
+                borderWidth: 3,
+                tension: 0.3,
+                fill: true,
+                pointRadius: 4,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#3498db'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1 
+                    },
+                    grid: {
+                        color: '#f0f0f0'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

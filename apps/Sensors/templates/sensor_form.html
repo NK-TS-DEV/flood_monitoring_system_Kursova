@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-plus-circle"></i> Додати новий сенсор</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-5">
+                                <h5 class="mb-3 text-muted border-bottom pb-2">Основні дані</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Регіон / Локація</label>
+                                    {{ form.region }}
+                                    <div class="form-text">Наприклад: Київ, Міст Патона</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Тип Сенсора</label>
+                                    {{ form.sensor_type }}
+                                    <div class="form-text">Код: water_level, temperature...</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Статус</label>
+                                    {{ form.status }}
+                                </div>
+
+                                <h5 class="mb-3 mt-4 text-muted border-bottom pb-2">Геопозиція</h5>
+                                <div class="alert alert-info small py-2">
+                                    <i class="fas fa-map-marker-alt"></i> Клікніть по карті, щоб встановити координати.
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-6 mb-3">
+                                        <label class="form-label">Широта (Lat)</label>
+                                        {{ form.latitude }}
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <label class="form-label">Довгота (Lng)</label>
+                                        {{ form.longitude }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-7">
+                                <label class="form-label fw-bold mb-2">Вибір місця на карті</label>
+                                <div id="map-picker" style="height: 500px; border-radius: 8px; border: 1px solid #ced4da;"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a href="{% url 'sensor_list' %}" class="btn btn-light border">Скасувати</a>
+                            <button type="submit" class="btn btn-success px-5 fw-bold">
+                                <i class="fas fa-save"></i> Зберегти Сенсор
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // 1. Инициализация карты (центр на Киеве)
+    var mapPicker = L.map('map-picker').setView([50.45, 30.52], 10); 
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(mapPicker);
+
+    // 2. Маркер
+    var marker;
+
+    // 3. Функция клика
+    function onMapClick(e) {
+        var lat = e.latlng.lat.toFixed(6);
+        var lng = e.latlng.lng.toFixed(6);
+
+        // Ищем поля по ID (Django автоматически дает id_имяполя)
+        var latField = document.getElementById('id_latitude');
+        var lngField = document.getElementById('id_longitude');
+
+        if(latField) latField.value = lat;
+        if(lngField) lngField.value = lng;
+
+        // Перемещаем маркер
+        if (marker) {
+            marker.setLatLng(e.latlng);
+        } else {
+            marker = L.marker(e.latlng).addTo(mapPicker);
+        }
+    }
+
+    mapPicker.on('click', onMapClick);
+
+    // 4. Если редактируем (координаты уже есть) - ставим маркер
+    setTimeout(() => {
+        var existingLat = document.getElementById('id_latitude').value;
+        var existingLon = document.getElementById('id_longitude').value;
+        
+        if (existingLat && existingLon) {
+            // Заменяем запятую на точку, если вдруг локаль другая
+            var lat = parseFloat(existingLat.replace(',', '.'));
+            var lng = parseFloat(existingLon.replace(',', '.'));
+            
+            if(!isNaN(lat) && !isNaN(lng)) {
+                var latlng = [lat, lng];
+                marker = L.marker(latlng).addTo(mapPicker);
+                mapPicker.setView(latlng, 12);
+            }
+        }
+    }, 500); // Небольшая задержка для загрузки DOM
+</script>
+{% endblock %}
