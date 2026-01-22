@@ -40,7 +40,9 @@ INSTALLED_APPS = [
 
     "apps.Sensors",
     "apps.analysis",
-    "apps.visualization"
+    "apps.visualization",
+    "apps.reports",
+    "apps.notifications"
 ]
 
 MIDDLEWARE = [
@@ -58,8 +60,7 @@ ROOT_URLCONF = "kursova.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            BASE_DIR / 'templates']
+        "DIRS": [ BASE_DIR / 'templates']
         ,
         "APP_DIRS": True,
         "OPTIONS": {
@@ -117,12 +118,22 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
 
-# Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'dashboard'
+
+# --- Email Settings ---
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_TLS = False
+DEFAULT_FROM_EMAIL = 'FloodMonitor <system@floodmonitor.com>'

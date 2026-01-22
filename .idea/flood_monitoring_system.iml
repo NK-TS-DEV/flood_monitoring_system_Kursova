@@ -5,9 +5,14 @@
     <option name="myDocStringFormat" value="Plain" />
   </component>
   <component name="TemplatesService">
+    <option name="TEMPLATE_CONFIGURATION" value="Django" />
     <option name="TEMPLATE_FOLDERS">
       <list>
         <option value="$MODULE_DIR$/templates" />
+        <option value="$MODULE_DIR$/apps/Sensors/templates" />
+        <option value="$MODULE_DIR$/apps/notifications/templates" />
+        <option value="$MODULE_DIR$/apps/reports/templates" />
+        <option value="$MODULE_DIR$/templates/registration" />
       </list>
     </option>
   </component>
